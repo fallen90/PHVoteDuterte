@@ -1,0 +1,48 @@
+{
+  "name": "PHVoteDuterte",
+  "description": "Web App",
+  "main": "",
+  "authors": [
+    "fallen90"
+  ],
+  "license": "MIT",
+  "moduleType": [],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.6",
+    "fastclick": "^1.0.6",
+    "jquery-form": "^3.46.0",
+    "font-awesome": "^4.5.0",
+    "fabric.js": "fabric#^1.6.0"
+  },
+  "preen": {
+    "jquery": [
+      "dist/*.js"
+    ],
+    "font-awesome": [
+      "css/*.css",
+      "fonts/*.*"
+    ],
+    "fastclick": [
+      "lib/*.js"
+    ],
+    "jquery-form": [
+      "*.js"
+    ],
+    "bootstrap": [
+      "dist/css/*",
+      "dist/js/*",
+      "dist/fonts/*"
+    ],
+    "fabric.js" : [
+      "dist/*.js"
+    ]
+  }
+}

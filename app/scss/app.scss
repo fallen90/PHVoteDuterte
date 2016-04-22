@@ -1,0 +1,106 @@
+$red: #EB152F;
+$blue: #183A64;
+$bg: #F7F7F7;
+$yellow: #F7CA18;
+$black: #111;
+$white: #fff;
+$gray: lighten($black, 70%);
+$dark: lighten($black, 30%);
+$facebook:#415E9C;
+
+
+body {
+    font-family: 'Raleway', sans-serif;
+    background: $bg;
+    padding:0;
+    margin:0;
+}
+.header {
+    background: $white;
+    border-bottom: 1px solid $gray;
+    padding: 12px;
+    .header-inner {
+        h1 {
+            font-family: 'Raleway', sans-serif;
+            color: red;
+            span:first-child {
+                color: $yellow;
+            }
+            span {
+                font-weight: bold;
+                color: $blue;
+            }
+        }
+        .lead {
+            margin-top: -10px;
+            padding-left: 25px;
+            margin-bottom: 5px;
+            color: $dark;
+            font-size: 16px;
+        }
+    }
+}
+
+.content {
+    padding: 20px 12px;
+    margin-bottom:50px;
+}
+
+.card {
+    box-shadow: 1px 2px 3px #ccc;
+}
+
+fieldset {
+    // border:none;
+    border: 1px solid $gray;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    width: 100%;
+    margin: 0 auto;
+    width: 100%;
+    display: block;
+    padding-left: 43%;
+    margin-top: 15px;
+    legend {
+        // padding: 5px 10px;
+        width: auto;
+        border: none;
+        color: $gray;
+        padding: 0 10px 0 10px;
+        font-size: 15px;
+    }
+}
+
+.btn {
+    &.btn-facebook {
+        background: $facebook;
+        color:white;
+        .fa:before {
+        	margin-right:5px;
+        }
+    }
+    &.btn-block {
+    	.fa:before{
+    		margin-right:5px;
+    	}
+    }
+    &.btn-generate {
+    	position:relative;
+    	.fa:before {
+    		position:absolute;
+    		right:18px;
+    		top:28%;
+    	}
+    }
+}
+
+
+.footer {
+	width:85%;
+	display:block;
+	text-align:center;
+	margin:0 auto;
+	padding-bottom:50px;
+	color:$dark;
+}

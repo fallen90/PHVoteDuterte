@@ -1,0 +1,38 @@
+{
+  "name": "PHVoteDuterte",
+  "version": "1.0.0",
+  "description": "Web App !!",
+  "keywords": [],
+  "author": "fallen90",
+  "license": "MIT",
+  "dependencies": {
+    "bower": "latest",
+    "connect-busboy": "0.0.2",
+    "ejs": "latest",
+    "express": "^4.13.4",
+    "gulp-concat": "^2.6.0",
+    "gulp-jshint": "^2.0.0",
+    "gulp-minify-css": "^1.2.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.5.3",
+    "jimp": "^0.2.21",
+    "jshint": "^2.9.2",
+    "lowdb": "^0.12.5",
+    "preen": "^1.2.0"
+  },
+  "scripts": {
+    "start": "node start.js"
+  },
+  "main": "start.js",
+  "devDependencies": {
+    "bower": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fallen90/PHVoteDuterte.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fallen90/PHVoteDuterte/issues"
+  },
+  "homepage": "https://github.com/fallen90/node-greenscreen#readme"
+}

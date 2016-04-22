@@ -1,0 +1,76 @@
+<div class="rows">
+    <div class="col-lg-4 col-md-4 col-xs-12 col-sm-4" id="step1">
+        <div class="panel panel-default card">
+            <div class="panel-heading">
+                <h3 class="panel-title"><b>STEP 1</b>: Choose Image</h3>
+            </div>
+            <div class="panel-body">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <a href="#" class="thumbnail">
+                        <img src="./img/pug.jpg" alt="" id="preview">
+                    </a>
+                </div>
+                <button class="btn btn-block btn-facebook">
+                    <i class="fa fa-facebook-f"></i> Use Facebook Profile
+                </button>
+                <fieldset class="title">
+                    <legend>or</legend>
+                </fieldset>
+                <button class="btn btn-block btn-primary" id="pickImage">
+                    <i class="fa fa-picture-o"></i> Choose an Image</button>
+                    <input type="file" name="file" id="file" accept="image/*" capture="camera" style="display:none">
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-xs-12 col-sm-4" id="step2">
+        <div class="panel panel-default card">
+            <div class="panel-heading">
+                <h3 class="panel-title"><b>STEP 2</b>: Typo Position</h3>
+            </div>
+            <div class="panel-body">
+                <button class="btn btn-block btn-facebook">
+                    Left Side
+                </button>
+                <fieldset class="title">
+                    <legend>or</legend>
+                </fieldset>
+                <button class="btn btn-block btn-primary">
+                    Right Side
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-xs-12 col-sm-4" id="step3">
+        <div class="panel panel-default card">
+            <div class="panel-heading">
+                <h3 class="panel-title"><b>STEP 3</b>: Personal Info</h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Name" id="userName" value="Facebook User">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Occupation / Title" id="userTitle" value="Duterte Supporter">
+                </div>
+                <button class="btn btn-block btn-primary btn-generate" id="generate">
+                    Generate <i class='fa fa-chevron-right'></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-xs-12 col-sm-4" id="outputPanel">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Output</h3>
+            </div>
+            <div class="panel-body" style="overflow:auto;">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <a href="#" class="thumbnail" download>
+                        <img data-src="#" alt="" id="output">
+                    </a>
+                </div>
+                <canvas id="c" width="540" height="540" style="display:none;border: 1px solid rgb(170, 170, 170);-webkit-user-select: none; cursor: default;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
