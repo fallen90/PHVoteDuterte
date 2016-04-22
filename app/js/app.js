@@ -1,4 +1,4 @@
-    var canvas = this.__canvas = new fabric.StaticCanvas('c');
+    var canvas = this.__canvas = new fabric.StaticCanvas('c',{backgroundColor : "#fff"});
 
     $(document).ready(function() {
         $('#file').on('change', function() {
@@ -24,57 +24,85 @@
         fabric.Object.prototype.transparentCorners = false;
 
         fabric.Image.fromURL('./img/bg.png', function(img) {
-            img.scale(1).set({
-                left: 0,
-                top: 0,
+            img.scale(0.4).set({
+                left: 320,
+                top: 100,
             });
 
             canvas.add(img);
 
             fabric.Image.fromURL($('#preview').attr('src'), function(img) {
 
-                img.scale(1).set({
-                    left: 10,
-                    top: 90,
+                var clipPoly = new fabric.Polygon([
+                    { x: -10, y: 540 }, //bottom left
+                    { x: 250, y: 540 }, //bottom right
+                    { x: 360, y: 0 }, //top right
+                    { x: -10, y: 0 } //top left
+                ], {
+                    left: -250,
+                    top: -270,
                     width: 360,
-                    height: 360,
+                    height: 540,
+                    fill: 'transparent',
+                    /* use transparent for no fill */
+                    strokeWidth: 0,
+                    selectable: false
                 });
+
+                img.scale(1).set({
+                    left: -20,
+                    top: 0,
+                    width: 540,
+                    height: 540,
+                    clipTo: function(ctx) {
+                        clipPoly.render(ctx);
+                    }
+                });
+
 
                 var filter = new fabric.Image.filters.Grayscale();
                 img.filters.push(filter);
                 img.applyFilters(canvas.renderAll.bind(canvas));
                 canvas.add(img);
-                var rect = new fabric.Rect({
-                    left: 10,
-                    top: 86,
-                    width: 360,
-                    height: 365
-                });
+                var rect = new fabric.Polygon([
+                    { x: 0, y: 540 }, //bottom left
+                    { x: 260, y: 540 }, //bottom right
+                    { x: 370, y: 0 }, //top right
+                    { x: 0, y: 0 } //top left
+                ]);
+                //{
+                //     left: 0,
+                //     top: -2,
+                //     width: 380,
+                //     height: 540
+                // });
+
+
                 rect.setGradient('fill', {
                     type: 'linear',
                     x1: 0,
-                    y1: -360,
-                    x2: 360,
-                    y2: -360,
+                    y1: -400,
+                    x2: 540,
+                    y2: -580,
                     colorStops: {
                         0: "rgba(255,255,255,0)",
-                        1: "rgba(255,255,255,0.8)"
+                        1: "rgba(255,255,255,1)"
                     }
                 });
                 canvas.add(rect);
 
                 fabric.Image.fromURL('./img/fg.png', function(img) {
-                    img.scale(1).set({
-                        left: 0,
-                        top: 0,
+                    img.scale(0.8).set({
+                        left: 110,
+                        top: 230,
                     });
                     canvas.add(img);
                     var userName = $('#userName').val() != "" ? $('#userName').val() : "Facebook User";
                     var userTitle = $('#userTitle').val() != "" ? $('#userTitle').val() : "Duterte Supporter";
 
-                    var name = new fabric.Textbox(userName, {
-                        left: 260,
-                        top: 360,
+                    var name = new fabric.Textbox('Xavier Lexus Conception', {
+                        left: 275,
+                        top: 485,
                         fontSize: 20,
                         fontFamily: 'Raleway',
                         textAlign: 'center',
@@ -84,9 +112,9 @@
                         height: 58,
                         fill: '#343434'
                     });
-                    var title = new fabric.Textbox(userTitle, {
-                        left: 260,
-                        top: 380,
+                    var title = new fabric.Textbox('Something of Somesort blah', {
+                        left: 275,
+                        top: 505,
                         fontSize: 15,
                         fontFamily: 'Raleway',
                         textAlign: 'center',
