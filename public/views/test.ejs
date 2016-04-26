@@ -2,19 +2,26 @@
 
     <body>
         <canvas id="c" width="540" height="540" style="border: 1px solid rgb(170, 170, 170);-webkit-user-select: none; cursor: default;"></canvas>
-       	<div class="container">
-			 <div class="row">
-				<div class="col-md-4">
-					<div class="form-group">
-						<input type="text" id="userName" placeholder="Name" class="form-control">
-					</div>
-					<div class="form-group">
-						<input type="text" id="userTitle" placeholder="Title" class="form-control">
-					</div>
-				</div>
-	        </div>
-       	</div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <input type="text" id="userName" placeholder="Name" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="userTitle" placeholder="Title" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <img src="./img/y.jpg" alt="" id="preview" style="display:none;">
         <% include partials/footer.ejs %>
+            <script>
+            generate();
+            // setTimeout(function(){
+            // 	window.location.href = "/test";
+            // }, 2000);
+            </script>
     </body>
 
     </html>
