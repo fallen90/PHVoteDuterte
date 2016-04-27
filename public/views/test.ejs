@@ -1,25 +1,54 @@
 <% include partials/header.ejs %>
 
     <body>
+        <div id="fb-root"></div>
+        <script>
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId: '1583106978685758',
+                xfbml: true,
+                version: 'v2.6'
+            });
+        };
+
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {
+                return;
+            }
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+        </script>
         <canvas id="c" width="540" height="540" style="border: 1px solid rgb(170, 170, 170);-webkit-user-select: none; cursor: default;"></canvas>
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
                     <div class="form-group">
-                        <input type="text" id="userName" placeholder="Name" class="form-control">
+                        <input type="text" id="userName" placeholder="Name" class="form-control" onkeyup="setName(this.value)">
                     </div>
                     <div class="form-group">
-                        <input type="text" id="userTitle" placeholder="Title" class="form-control">
+                        <input type="text" id="userTitle" placeholder="Title" class="form-control" onkeyup="setTitle(this.value)">
                     </div>
                 </div>
             </div>
         </div>
-        <img src="./img/y.jpg" alt="" id="preview" style="display:none;">
+        <input type="range" min="-101" max="100" step="0.5" onchange="movePicture(this.value)" class="flipped">
+        <button type="button" id="flip" onclick="flip()">
+            <img src="/img/flip.png" class="flipped">
+        </button>
+        <img src="./img/default.jpg" alt="" id="preview" style="display:none;width:auto;height:auto">
+        <button onclick="javascript:login();">Login Facebook</button>
+        <br>
+        <button onclick="javascript:logout();">Logout from Facebook</button>
+        <fb:login-button scope="public_profile,email,picture,publish_actions" onlogin="checkLoginState();"></fb:login-button>
         <% include partials/footer.ejs %>
             <script>
             generate();
             // setTimeout(function(){
-            // 	window.location.href = "/test";
+            //  window.location.href = "/test";
             // }, 2000);
             </script>
     </body>

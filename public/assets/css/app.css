@@ -71,3 +71,11 @@ fieldset {
   margin: 0 auto;
   padding-bottom: 50px;
   color: #5e5e5e; }
+
+.flipped {
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  filter: FlipH;
+  -ms-filter: "FlipH"; }

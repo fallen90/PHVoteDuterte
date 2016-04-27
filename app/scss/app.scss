@@ -7,14 +7,13 @@ $white: #fff;
 $gray: lighten($black, 70%);
 $dark: lighten($black, 30%);
 $facebook:#415E9C;
-
-
 body {
     font-family: 'Raleway', sans-serif;
     background: $bg;
-    padding:0;
-    margin:0;
+    padding: 0;
+    margin: 0;
 }
+
 .header {
     background: $white;
     border-bottom: 1px solid $gray;
@@ -43,7 +42,7 @@ body {
 
 .content {
     padding: 20px 12px;
-    margin-bottom:50px;
+    margin-bottom: 50px;
 }
 
 .card {
@@ -75,32 +74,40 @@ fieldset {
 .btn {
     &.btn-facebook {
         background: $facebook;
-        color:white;
+        color: white;
         .fa:before {
-        	margin-right:5px;
+            margin-right: 5px;
         }
     }
     &.btn-block {
-    	.fa:before{
-    		margin-right:5px;
-    	}
+        .fa:before {
+            margin-right: 5px;
+        }
     }
     &.btn-generate {
-    	position:relative;
-    	.fa:before {
-    		position:absolute;
-    		right:18px;
-    		top:28%;
-    	}
+        position: relative;
+        .fa:before {
+            position: absolute;
+            right: 18px;
+            top: 28%;
+        }
     }
 }
 
-
 .footer {
-	width:85%;
-	display:block;
-	text-align:center;
-	margin:0 auto;
-	padding-bottom:50px;
-	color:$dark;
+    width: 85%;
+    display: block;
+    text-align: center;
+    margin: 0 auto;
+    padding-bottom: 50px;
+    color: $dark;
+}
+
+.flipped {
+    -moz-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+    filter: FlipH;
+    -ms-filter: "FlipH";
 }

@@ -1,743 +1,853 @@
-    var canvas = this.__canvas = new fabric.StaticCanvas('c');
+var canvas = this.__canvas = new fabric.StaticCanvas('c');
+var movePicture = function(val) {
+    console.log('val;m', val);
+    var item = canvas.item(1);
+    // item.left = val;
+    // item.setCoords();
+    // canvas.calcOffset();
+    // canvas.renderAll();
+    item.animate('left', val, { onChange: canvas.renderAll.bind(canvas) });
+    console.log(item);
+};
+var GetUserProfile = function() {
+    FB.getLoginStatus(function(response) {
+        console.log('FB Response', response);
+        if (response.status === 'connected') {
+            console.log('FB User Connected');
+            GetUserDetails();
+            GetUserPicture();
+        } else {
+            console.log('FB User Login');
 
-    $(document).ready(function() {
-        $('#file').on('change', function() {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                // get loaded data and render thumbnail.
-                document.getElementById("preview").src = e.target.result;
+            FB.login(function() {
+                GetUserDetails();
+                GetUserPicture();
+            }, { scope: 'public_profile,publish_actions' });
+        }
+    });
+};
+var GetUserDetails = function() {
+    FB.api(
+        '/me',
+        'GET', { 'fields': 'id,name,work,birthday,email' },
+        function(response) {
+            console.log('response user', response);
+            $('#userName').val(response.name);
+        }
+    );
+}
+var GetUserPicture = function() {
+    FB.api(
+        '/me/picture',
+        'GET', { width: 512 },
+        function(response) {
+            console.log('response', response);
+            $('#preview').attr('src', response.data.url).on('load', function(e) {
+                console.log('full loaded');
+                canvas.clear();
                 generate();
-            };
-            // read the image file as a data URL.
-            reader.readAsDataURL(this.files[0]);
-        });
-        $('#generate').click(function() {
-            generate();
-        });
-        $('#pickImage').click(function(e) {
-            e.preventDefault();
-            $('input[type=file]').trigger('click');
-        });
+            });
+        }
+    );
+};
+var DownloadImage = function() {
+    var data = canvas.toDataURL({
+        format: 'png'
+    });
+    downloadURI(data, 'download.png');
+};
+
+var downloadURI = function(uri, name) {
+    var link = document.createElement("a");
+    link.download = name;
+    link.href = uri;
+    link.click();
+};
+var UploadToFacebook = function() {
+    var data = canvas.toDataURL({
+        format: 'png'
     });
 
-    function generate() {
-        fabric.Object.prototype.transparentCorners = false;
+    $.ajax({
+        'type': 'POST',
+        'url': '/download',
+        'contentType': 'application/json',
+        'data': JSON.stringify({
+            data: data,
+            accessToken: FB.getAccessToken()
+        }),
+        'dataType': 'json',
+        'success': function(res) {
+            console.log('response', res);
+        }
+    });
+};
+var flip = function() {
+    console.log('click!');
+    var item = canvas.item(1);
+    item.flipX = !item.flipX;
+    item.animate('left', 0, { onChange: canvas.renderAll.bind(canvas) });
+    $('[type=range]').val(0);
 
-        fabric.Image.fromURL('./img/bg.png', function(img) {
+
+    if (item.flipX) {
+        $('#flip > img').addClass('flipped');
+    } else {
+        $('#flip > img').removeClass('flipped');
+    }
+};
+var setName = function(val) {
+    var item = canvas.item(3);
+    item.setText(val);
+    canvas.renderAll();
+};
+var setTitle = function(val) {
+    var item = canvas.item(4);
+    item.setText(val);
+    canvas.renderAll();
+};
+
+$(document).ready(function() {
+    $('#file').on('change', function() {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            // get loaded data and render thumbnail.
+            document.getElementById("preview").src = e.target.result;
+            canvas = this.__canvas = new fabric.StaticCanvas('c');
+            generate();
+        };
+        // read the image file as a data URL.
+        reader.readAsDataURL(this.files[0]);
+    });
+    $('#generate').click(function() {
+        generate();
+    });
+    $('#pickImage').click(function(e) {
+        e.preventDefault();
+        $('input[type=file]').trigger('click');
+    });
+});
+
+function generate() {
+    fabric.Object.prototype.transparentCorners = false;
+
+    fabric.Image.fromURL('./img/backplate.jpg', function(img) {
+        img.scale(1).set({
+            left: 0,
+            top: 0
+        });
+
+        canvas.add(img);
+
+        fabric.Image.fromURL($('#preview').attr('src'), function(img) {
+
+            var imgWidth = img.width * (540 / img.height);
             img.scale(1).set({
                 left: 0,
                 top: 0,
+                width: imgWidth,
+                height: 540,
+                flipX: false
             });
-
+            //set range slider min and max based on pic dimensions
+            $('[type=range]').val(0);
+            $('[type=range]').attr('min', "-" + imgWidth * (0.4));
+            $('[type=range]').attr('max', 0);
             canvas.add(img);
-
-            fabric.Image.fromURL($('#preview').attr('src'), function(img) {
-
-                img.scale(1).set({
-                    left: 10,
-                    top: 90,
-                    width: 360,
-                    height: 360,
-                });
-
-                var filter = new fabric.Image.filters.Grayscale();
-                img.filters.push(filter);
-                img.applyFilters(canvas.renderAll.bind(canvas));
-                canvas.add(img);
-                var rect = new fabric.Rect({
-                    left: 10,
-                    top: 86,
-                    width: 360,
-                    height: 365
-                });
-                rect.setGradient('fill', {
-                    type: 'linear',
-                    x1: 0,
-                    y1: -360,
-                    x2: 360,
-                    y2: -360,
-                    colorStops: {
-                        0: "rgba(255,255,255,0)",
-                        1: "rgba(255,255,255,0.8)"
-                    }
-                });
-                canvas.add(rect);
-
-                fabric.Image.fromURL('./img/fg.png', function(img) {
-                    img.scale(1).set({
-                        left: 0,
-                        top: 0,
-                    });
-                    canvas.add(img);
-                    var userName = $('#userName').val() != "" ? $('#userName').val() : "Facebook User";
-                    var userTitle = $('#userTitle').val() != "" ? $('#userTitle').val() : "Duterte Supporter";
-
-                    var name = new fabric.Textbox(userName, {
-                        left: 260,
-                        top: 360,
-                        fontSize: 20,
-                        fontFamily: 'Raleway',
-                        textAlign: 'center',
-                        vAlign: 'center',
-                        fontWeight: 600,
-                        width: 260,
-                        height: 58,
-                        fill: '#343434'
-                    });
-                    var title = new fabric.Textbox(userTitle, {
-                        left: 260,
-                        top: 380,
-                        fontSize: 15,
-                        fontFamily: 'Raleway',
-                        textAlign: 'center',
-                        vAlign: 'center',
-                        fontWeight: 400,
-                        width: 260,
-                        height: 58,
-                        fontStyle: 'italic'
-                    });
-                    canvas.add(name);
-                    canvas.add(title);
-                    var data = canvas.toDataURL({
-                        format: 'jpeg'
-                    });
-                    $('#output').attr('src', data).parent().attr('href', data);
-                });
+            var rect = new fabric.Rect({
+                left: 10,
+                top: 86,
+                width: 360,
+                height: 365
             });
-        });
+            rect.setGradient('fill', {
+                type: 'linear',
+                x1: 0,
+                y1: -360,
+                x2: 360,
+                y2: -360,
+                colorStops: {
+                    0: "rgba(255,255,255,0)",
+                    1: "rgba(255,255,255,0.8)"
+                }
+            });
+            // canvas.add(rect);
 
+            fabric.Image.fromURL('./img/frontplate.jpg', function(img) {
+                img.scale(1).set({
+                    left: 0,
+                    top: 0,
+                });
+                canvas.add(img);
+                var userName = $('#userName').val() != "" ? $('#userName').val() : "Facebook User";
+                var userTitle = $('#userTitle').val() != "" ? $('#userTitle').val() : "Duterte Supporter";
+
+                var name = new fabric.Textbox(userName, {
+                    left: 260,
+                    top: 315,
+                    fontSize: 24,
+                    fontFamily: 'Raleway',
+                    textAlign: 'center',
+                    vAlign: 'center',
+                    fontWeight: 600,
+                    width: 260,
+                    height: 58,
+                    fill: '#343434'
+                });
+                var title = new fabric.Textbox(userTitle, {
+                    left: 260,
+                    top: 340,
+                    fontSize: 15,
+                    fontFamily: 'Raleway',
+                    textAlign: 'center',
+                    vAlign: 'center',
+                    fontWeight: 400,
+                    width: 260,
+                    height: 58,
+                    fontStyle: 'italic'
+                });
+                canvas.add(name); //3
+                canvas.add(title); //4
+                var data = canvas.toDataURL({
+                    format: 'jpeg'
+                });
+                $('#output').attr('src', data).parent().attr('href', data);
+            });
+        }, { crossOrigin: 'Anonymous' });
+    });
+
+}
+
+
+
+(function(global) {
+
+    "use strict";
+
+
+    /**
+     * fabric.Textbox A class to create TextBoxes, with or without images as their boxes
+     */
+
+    var fabric = global.fabric || (global.fabric = {}),
+        extend = fabric.util.object.extend,
+        clone = fabric.util.object.clone,
+        toFixed = fabric.util.toFixed;
+
+    if (fabric.Textbox) {
+        fabric.warn('fabric.Textbox is already defined');
+        return;
+    }
+    if (!fabric.Object) {
+        fabric.warn('fabric.Textbox requires fabric.Object');
+        return;
     }
 
+    var stateProperties = fabric.Object.prototype.stateProperties.concat();
+    // properties for the box and the text
+    var newProperties = [
+        'fontFamily',
+        'fontWeight',
+        'fontSize',
+        'path',
+        'text',
+        'textDecoration',
+        'textShadow',
+        'textAlign',
+        'fontStyle',
+        'lineHeight',
+        'backgroundColor',
+        'textBackgroundColor',
+        'useNative',
+        'originalText',
+        'textPadding',
+        'boxPath',
+        'vAlign',
+        'boxImageScaleX',
+        'boxImageScaleY'
+    ];
 
+    stateProperties = stateProperties.concat(newProperties);
 
-    (function(global) {
-
-        "use strict";
-
+    /**
+     * Textbox class
+     * @class fabric.Textbox
+     * @classdesc Permits the creation of text boxes
+     * @extends fabric.Object
+     * @borrows fabric.Text as textObject
+     * @borrows fabric.Pathgroup as boxImage
+     * @return {fabric.Textbox} thisArg
+     */
+    fabric.Textbox = fabric.util.createClass(fabric.Object, /** @lends fabric.Textbox.prototype */ {
+        /**
+         * Type of an object
+         * @type String
+         * @default
+         */
+        type: 'textbox',
 
         /**
-         * fabric.Textbox A class to create TextBoxes, with or without images as their boxes
+         * Font size (in pixels)
+         * @type Number
+         * @default
          */
-
-        var fabric = global.fabric || (global.fabric = {}),
-            extend = fabric.util.object.extend,
-            clone = fabric.util.object.clone,
-            toFixed = fabric.util.toFixed;
-
-        if (fabric.Textbox) {
-            fabric.warn('fabric.Textbox is already defined');
-            return;
-        }
-        if (!fabric.Object) {
-            fabric.warn('fabric.Textbox requires fabric.Object');
-            return;
-        }
-
-        var stateProperties = fabric.Object.prototype.stateProperties.concat();
-        // properties for the box and the text
-        var newProperties = [
-            'fontFamily',
-            'fontWeight',
-            'fontSize',
-            'path',
-            'text',
-            'textDecoration',
-            'textShadow',
-            'textAlign',
-            'fontStyle',
-            'lineHeight',
-            'backgroundColor',
-            'textBackgroundColor',
-            'useNative',
-            'originalText',
-            'textPadding',
-            'boxPath',
-            'vAlign',
-            'boxImageScaleX',
-            'boxImageScaleY'
-        ];
-
-        stateProperties = stateProperties.concat(newProperties);
+        fontSize: 40,
 
         /**
-         * Textbox class
-         * @class fabric.Textbox
-         * @classdesc Permits the creation of text boxes
-         * @extends fabric.Object
-         * @borrows fabric.Text as textObject
-         * @borrows fabric.Pathgroup as boxImage
-         * @return {fabric.Textbox} thisArg
+         * Font weight (e.g. bold, normal, 400, 600, 800)
+         * @type Number
+         * @default
          */
-        fabric.Textbox = fabric.util.createClass(fabric.Object, /** @lends fabric.Textbox.prototype */ {
-            /**
-             * Type of an object
-             * @type String
-             * @default
-             */
-            type: 'textbox',
+        fontWeight: 'normal',
 
-            /**
-             * Font size (in pixels)
-             * @type Number
-             * @default
-             */
-            fontSize: 40,
+        /**
+         * Font family
+         * @type String
+         * @default
+         */
+        fontFamily: 'Times New Roman',
 
-            /**
-             * Font weight (e.g. bold, normal, 400, 600, 800)
-             * @type Number
-             * @default
-             */
-            fontWeight: 'normal',
+        /**
+         * Text decoration Possible values: "", "underline", "overline" or "line-through".
+         * @type String
+         * @default
+         */
+        textDecoration: '',
 
-            /**
-             * Font family
-             * @type String
-             * @default
-             */
-            fontFamily: 'Times New Roman',
+        /**
+         * Text shadow
+         * @type String | null
+         * @default
+         */
+        textShadow: '',
 
-            /**
-             * Text decoration Possible values: "", "underline", "overline" or "line-through".
-             * @type String
-             * @default
-             */
-            textDecoration: '',
+        /**
+         * Text alignment. Possible values: "left", "center", or "right".
+         * @type String
+         * @default
+         */
+        textAlign: 'left',
 
-            /**
-             * Text shadow
-             * @type String | null
-             * @default
-             */
-            textShadow: '',
+        /**
+         * Font style . Possible values: "", "normal", "italic" or "oblique".
+         * @type String
+         * @default
+         */
+        fontStyle: '',
 
-            /**
-             * Text alignment. Possible values: "left", "center", or "right".
-             * @type String
-             * @default
-             */
-            textAlign: 'left',
+        /**
+         * Line height
+         * @type Number
+         * @default
+         */
+        lineHeight: 1.3,
 
-            /**
-             * Font style . Possible values: "", "normal", "italic" or "oblique".
-             * @type String
-             * @default
-             */
-            fontStyle: '',
+        /**
+         * Background color of an entire text box
+         * @type String
+         * @default
+         */
+        backgroundColor: '',
 
-            /**
-             * Line height
-             * @type Number
-             * @default
-             */
-            lineHeight: 1.3,
+        /**
+         * Background color of text lines
+         * @type String
+         * @default
+         */
+        textBackgroundColor: '',
 
-            /**
-             * Background color of an entire text box
-             * @type String
-             * @default
-             */
-            backgroundColor: '',
+        /**
+         * URL of a font file, when using Cufon
+         * @type String | null
+         * @default
+         */
+        path: null,
 
-            /**
-             * Background color of text lines
-             * @type String
-             * @default
-             */
-            textBackgroundColor: '',
+        /**
+         * Indicates whether canvas native text methods should be used to render text (otherwise, Cufon is used)
+         * @type Boolean
+         * @default
+         */
+        useNative: true,
 
-            /**
-             * URL of a font file, when using Cufon
-             * @type String | null
-             * @default
-             */
-            path: null,
+        /**
+         * List of properties to consider when checking if state of an object is changed ({@link fabric.Object#hasStateChanged})
+         * as well as for history (undo/redo) purposes
+         * @type Array
+         */
+        stateProperties: stateProperties,
 
-            /**
-             * Indicates whether canvas native text methods should be used to render text (otherwise, Cufon is used)
-             * @type Boolean
-             * @default
-             */
-            useNative: true,
+        /**
+         * The text that was setted when the object was instantiated
+         * @type String
+         * @default
+         */
+        originalText: '',
 
-            /**
-             * List of properties to consider when checking if state of an object is changed ({@link fabric.Object#hasStateChanged})
-             * as well as for history (undo/redo) purposes
-             * @type Array
-             */
-            stateProperties: stateProperties,
+        /**
+         * The padding of the text, relative to the "box"
+         * @type Integer
+         * @default
+         */
+        textPadding: 10,
 
-            /**
-             * The text that was setted when the object was instantiated
-             * @type String
-             * @default
-             */
-            originalText: '',
+        /**
+         * Defines if the textPadding must be scaled with the box
+         * @type Boolean
+         * @default
+         */
+        scaleTextPadding: true,
 
-            /**
-             * The padding of the text, relative to the "box"
-             * @type Integer
-             * @default
-             */
-            textPadding: 10,
+        /**
+         * The fabric.Pathgroup object that holds the box image
+         * @type fabric.Pathgroup
+         * @default
+         */
+        boxImage: null,
 
-            /**
-             * Defines if the textPadding must be scaled with the box
-             * @type Boolean
-             * @default
-             */
-            scaleTextPadding: true,
+        /**
+         * The path of the image of the box
+         * @type String
+         * @default
+         */
+        boxPath: '',
 
-            /**
-             * The fabric.Pathgroup object that holds the box image
-             * @type fabric.Pathgroup
-             * @default
-             */
-            boxImage: null,
+        /**
+         * Vertical alignment of the text relative to the box. Possible values: top, center, bottom
+         * @type String
+         * @default
+         */
+        vAlign: 'center',
 
-            /**
-             * The path of the image of the box
-             * @type String
-             * @default
-             */
-            boxPath: '',
+        /**
+         * Original scales of the box. Used when rendering the text
+         * @private
+         * @type Array
+         */
+        originalScales: null,
 
-            /**
-             * Vertical alignment of the text relative to the box. Possible values: top, center, bottom
-             * @type String
-             * @default
-             */
-            vAlign: 'center',
+        /**
+         * The scaleX property that needed to be applied to the box
+         * @type Integer
+         * @default
+         */
+        boxImageScaleX: 1,
 
-            /**
-             * Original scales of the box. Used when rendering the text
-             * @private
-             * @type Array
-             */
-            originalScales: null,
+        /**
+         * The scaleY property that needed to be applied to the box
+         * @type Integer
+         * @default
+         */
+        boxImageScaleY: 1,
 
-            /**
-             * The scaleX property that needed to be applied to the box
-             * @type Integer
-             * @default
-             */
-            boxImageScaleX: 1,
+        /**
+         * The fabric.Text object that holds the text
+         * @type fabric.Text
+         */
+        textObject: null,
 
-            /**
-             * The scaleY property that needed to be applied to the box
-             * @type Integer
-             * @default
-             */
-            boxImageScaleY: 1,
+        /**
+         * Color of object's fill
+         * @type String
+         * @default
+         */
+        fill: "rgba(221,204,197,0.6)",
 
-            /**
-             * The fabric.Text object that holds the text
-             * @type fabric.Text
-             */
-            textObject: null,
+        /**
+         * @method initialize
+         * @param {String} text
+         * @param {Object} options
+         * @param {Function} cb callback to be called when the box image is loaded
+         */
+        initialize: function(text, options, cb) {
+            this.callSuper('initialize', options);
+            this.setOptions(options);
+            this.setCoords();
+            this.originalText = text;
 
-            /**
-             * Color of object's fill
-             * @type String
-             * @default
-             */
-            fill: "rgba(221,204,197,0.6)",
+            var _this = this;
 
-            /**
-             * @method initialize
-             * @param {String} text
-             * @param {Object} options
-             * @param {Function} cb callback to be called when the box image is loaded
-             */
-            initialize: function(text, options, cb) {
-                this.callSuper('initialize', options);
-                this.setOptions(options);
-                this.setCoords();
-                this.originalText = text;
-
-                var _this = this;
-
-                var createBox = function(objects, options) {
-                    var boxImage = {};
-                    if (objects.length > 1) {
-                        var opts = clone(options);
-                        boxImage = new fabric.PathGroup(objects, opts);
-                    } else {
-                        if (Object.prototype.toString.call(objects) === "[object Array]") {
-                            boxImage = objects[0];
-                        } else {
-                            boxImage = objects;
-                        }
-                    }
-
-                    var sx = (_this.get('width') / boxImage.get('width')),
-                        sy = ((_this.get('height') + 20) / boxImage.get('height'));
-
-                    _this.boxImageScaleX = sx;
-                    _this.boxImageScaleY = sy;
-
-                    boxImage.set({
-                        angle: 0,
-                        scaleX: sx,
-                        scaleY: sy,
-                        hasRotatingPoint: false,
-                        lockScalingX: true,
-                        lockScalingY: true,
-                        selectable: false,
-                        useNative: true
-                    });
-
-                    boxImage.setSourcePath(_this.boxPath);
-                    boxImage.set('_id', _this._id);
-
-                    _this.boxImage = boxImage;
-                    createText(text, options);
-                };
-
-                var createText = function(text, options) {
-                    _this.textObject = new fabric.Text(text, options);
-                    _this.textObject.originalText = text;
-                    _this._applyPropertiesToText(options);
-
-                    //_this.boxImage && _this.boxImage.sendBackwards();
-                    if (cb) {
-                        cb();
-                    }
-                };
-
-                // loads the box image, if set
-                if (this.boxPath) {
-                    if (this.boxPath.match(/svg$/)) {
-                        fabric.loadSVGFromURL(this.boxPath, createBox);
-                    } else {
-                        fabric.Image.fromURL(this.boxPath, createBox);
-                    }
+            var createBox = function(objects, options) {
+                var boxImage = {};
+                if (objects.length > 1) {
+                    var opts = clone(options);
+                    boxImage = new fabric.PathGroup(objects, opts);
                 } else {
-                    createText(text, options);
-                }
-            },
-
-            /**
-             * Returns object representation of an instance
-             * @method toObject
-             * @param {Array} [propertiesToInclude] Any properties that you might want to additionally include in the output
-             * @return {Object} Object representation of an instance
-             */
-            toObject: function(propertiesToInclude) {
-                if (!propertiesToInclude) {
-                    propertiesToInclude = [];
-                }
-
-                propertiesToInclude = propertiesToInclude.concat(newProperties);
-
-                return fabric.util.object.extend(this.callSuper('toObject', propertiesToInclude));
-            },
-
-            /**
-             * Toggles specified property from `true` to `false` or from `false` to `true` in the Textbox object and the refered fabric.Pathgroup child object
-             * @method toggle
-             * @param {String} property property to toggle
-             * @return {fabric.Object} thisArg
-             * @chainable
-             */
-            toggle: function(property) {
-                this.boxImage.toggle(prop);
-                return this.callSuper('toggle', prop);
-            },
-
-            /**
-             * Calculate and return the textScale, based on the scaling of the object
-             * @method getTextPadding
-             * @param {String} scale The type of the scale. Possible values are "y" and "x"
-             * @return Number
-             */
-            getTextPadding: function(scale) {
-                if (!scale) scale = "x";
-                else scale = scale.toLowerCase();
-
-                if (!this.boxImage || !this.scaleTextPadding) {
-                    return this.textPadding;
-                } else {
-                    var scales = {},
-                        originalScales = this.originalScales;
-                    if (originalScales) {
-                        scales.x = originalScales[0];
-                        scales.y = originalScales[1];
+                    if (Object.prototype.toString.call(objects) === "[object Array]") {
+                        boxImage = objects[0];
                     } else {
-                        scales.x = this.get("scaleX");
-                        scales.y = this.get("scaleY");
+                        boxImage = objects;
                     }
-                    return this.textPadding * scales[scale];
                 }
-            },
 
-            /**
-             * Copied from fabric.Object.render, but with little modifications
-             * @method render
-             * @param {CanvasRenderingContext2D} ctx Context to render on
-             * @param {Boolean} noTransform
-             */
-            render: function(ctx, noTransform) {
-                // do not render if width or height are zeros
-                if (this.width === 0 || this.height === 0) return;
+                var sx = (_this.get('width') / boxImage.get('width')),
+                    sy = ((_this.get('height') + 20) / boxImage.get('height'));
 
+                _this.boxImageScaleX = sx;
+                _this.boxImageScaleY = sy;
+
+                boxImage.set({
+                    angle: 0,
+                    scaleX: sx,
+                    scaleY: sy,
+                    hasRotatingPoint: false,
+                    lockScalingX: true,
+                    lockScalingY: true,
+                    selectable: false,
+                    useNative: true
+                });
+
+                boxImage.setSourcePath(_this.boxPath);
+                boxImage.set('_id', _this._id);
+
+                _this.boxImage = boxImage;
+                createText(text, options);
+            };
+
+            var createText = function(text, options) {
+                _this.textObject = new fabric.Text(text, options);
+                _this.textObject.originalText = text;
+                _this._applyPropertiesToText(options);
+
+                //_this.boxImage && _this.boxImage.sendBackwards();
+                if (cb) {
+                    cb();
+                }
+            };
+
+            // loads the box image, if set
+            if (this.boxPath) {
+                if (this.boxPath.match(/svg$/)) {
+                    fabric.loadSVGFromURL(this.boxPath, createBox);
+                } else {
+                    fabric.Image.fromURL(this.boxPath, createBox);
+                }
+            } else {
+                createText(text, options);
+            }
+        },
+
+        /**
+         * Returns object representation of an instance
+         * @method toObject
+         * @param {Array} [propertiesToInclude] Any properties that you might want to additionally include in the output
+         * @return {Object} Object representation of an instance
+         */
+        toObject: function(propertiesToInclude) {
+            if (!propertiesToInclude) {
+                propertiesToInclude = [];
+            }
+
+            propertiesToInclude = propertiesToInclude.concat(newProperties);
+
+            return fabric.util.object.extend(this.callSuper('toObject', propertiesToInclude));
+        },
+
+        /**
+         * Toggles specified property from `true` to `false` or from `false` to `true` in the Textbox object and the refered fabric.Pathgroup child object
+         * @method toggle
+         * @param {String} property property to toggle
+         * @return {fabric.Object} thisArg
+         * @chainable
+         */
+        toggle: function(property) {
+            this.boxImage.toggle(prop);
+            return this.callSuper('toggle', prop);
+        },
+
+        /**
+         * Calculate and return the textScale, based on the scaling of the object
+         * @method getTextPadding
+         * @param {String} scale The type of the scale. Possible values are "y" and "x"
+         * @return Number
+         */
+        getTextPadding: function(scale) {
+            if (!scale) scale = "x";
+            else scale = scale.toLowerCase();
+
+            if (!this.boxImage || !this.scaleTextPadding) {
+                return this.textPadding;
+            } else {
+                var scales = {},
+                    originalScales = this.originalScales;
+                if (originalScales) {
+                    scales.x = originalScales[0];
+                    scales.y = originalScales[1];
+                } else {
+                    scales.x = this.get("scaleX");
+                    scales.y = this.get("scaleY");
+                }
+                return this.textPadding * scales[scale];
+            }
+        },
+
+        /**
+         * Copied from fabric.Object.render, but with little modifications
+         * @method render
+         * @param {CanvasRenderingContext2D} ctx Context to render on
+         * @param {Boolean} noTransform
+         */
+        render: function(ctx, noTransform) {
+            // do not render if width or height are zeros
+            if (this.width === 0 || this.height === 0) return;
+
+            ctx.save();
+
+            this._preRenderTransform(ctx, noTransform, false);
+
+            this._render(ctx, noTransform);
+
+            if (this.active && !noTransform) {
+                this.drawBorders(ctx);
+                this.drawControls(ctx);
+            }
+            ctx.restore();
+
+            if (this.boxImage) {
+                // move and render the box image
+                this._moveImageBox(ctx);
+                this.boxImage.render(ctx, true);
+            }
+
+            if (this.textObject) {
                 ctx.save();
-
-                this._preRenderTransform(ctx, noTransform, false);
-
-                this._render(ctx, noTransform);
-
-                if (this.active && !noTransform) {
-                    this.drawBorders(ctx);
-                    this.drawControls(ctx);
+                this._preRenderTransform(ctx, noTransform, true);
+                this._applyPropertiesToText();
+                // move and render text
+                this._moveText(ctx);
+                this.textObject.render(ctx, true);
+                if (!noTransform) {
+                    this.scaleX = this.originalScales[0];
+                    this.scaleY = this.originalScales[1];
+                    this.originalScales = null;
                 }
                 ctx.restore();
-
-                if (this.boxImage) {
-                    // move and render the box image
-                    this._moveImageBox(ctx);
-                    this.boxImage.render(ctx, true);
-                }
-
-                if (this.textObject) {
-                    ctx.save();
-                    this._preRenderTransform(ctx, noTransform, true);
-                    this._applyPropertiesToText();
-                    // move and render text
-                    this._moveText(ctx);
-                    this.textObject.render(ctx, true);
-                    if (!noTransform) {
-                        this.scaleX = this.originalScales[0];
-                        this.scaleY = this.originalScales[1];
-                        this.originalScales = null;
-                    }
-                    ctx.restore();
-                }
-            },
-
-            /**
-             * Transforms context before to render an object
-             * @method _preRenderTransform
-             * @param {CanvasRenderingContext2D} ctx Context
-             * @param {Boolean} noTransform If transform shouldn't be applyed
-             * @param {Boolean} noScale True if scale(x|y) must be reseted to 1, false if not
-             */
-            _preRenderTransform: function(ctx, noTransform, noScale) {
-                var m = this.transformMatrix;
-                if (m && !this.group) {
-                    ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
-                }
-
-                if (!noTransform) {
-                    if (noScale) {
-                        this.originalScales = [this.scaleX, this.scaleY];
-                        this.scaleX = 1;
-                        this.scaleY = 1;
-                    }
-                    this.transform(ctx);
-                }
-
-                if (m && this.group) {
-                    ctx.translate(-this.group.width / 2, -this.group.height / 2);
-                    ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
-                }
-            },
-
-            /**
-             * Apply a background in the text if no box selected
-             * @method _render
-             * @param {CanvasRenderingContext2D} ctx Context to render on
-             */
-            _render: function(ctx) {
-                // show a background in the text, if selected
-                if (this.isActive() && !this.boxImage) {
-                    ctx.save();
-
-                    var x = -this.width / 2,
-                        y = -this.height / 2,
-                        w = this.width,
-                        h = this.height;
-
-                    ctx.fillStyle = this.fill.toLive ? this.fill.toLive(ctx) : this.fill;
-
-                    ctx.fillRect(x, y, w, h);
-
-                    ctx.restore();
-                }
-            },
-
-            /**
-             * Adjust the text position in the canvas
-             * @method _moveText
-             * @param {CanvasRenderingContext2D} ctx Context to render on
-             */
-            _moveText: function(ctx) {
-                this.textObject.set('text', this._wrapText(
-                    ctx,
-                    this.textObject.get('originalText')
-                ));
-
-                var scaleX = this.originalScales ? this.originalScales[0] : this.scaleX;
-                var scaleY = this.originalScales ? this.originalScales[1] : this.scaleY;
-
-
-                var x = 0,
-                    y = 0;
-
-                // horizontal alignment
-                if (this.textAlign == 'left') {
-                    x = x - ((this.get("width") * scaleX) / 2) + (this.textObject.get('width') / 2) + (this.getTextPadding('x'));
-                } else if (this.textAlign == 'right') {
-                    x = x + ((this.get("width") * scaleX) / 2) - (this.textObject.get('width') / 2) - (this.getTextPadding('x'));
-                }
-
-                // vertical alignment
-                if (this.vAlign == "top") {
-                    y = y + ((this.textObject.get('height') / 2) - ((this.get('height') * scaleY) / 2)) + (this.getTextPadding('y'));
-                } else if (this.vAlign == 'bottom') {
-                    y = y - ((this.textObject.get('height') / 2) - ((this.get('height') * scaleY) / 2)) - (this.getTextPadding('y'));
-                }
-
-                // left and top are related to current context transform (the transform of textbox object)
-                this.textObject.set("left", x);
-                this.textObject.set("top", y);
-            },
-
-            /**
-             * Break the text accordingly to the width of Textbox. Based on the code of Darren Nolan (@darrennolan)
-             * @method _wrapText
-             * @param {CanvasRenderingContext2D} ctx Context to render on
-             * @param {String} Text to wrap
-             * @return {Array} Array with the lines of the text
-             */
-            _wrapText: function(ctx, text) {
-                var scaleX = (this.originalScales ? this.originalScales[0] : this.scaleX);
-                var maxWidth = (this.width * scaleX),
-                    lines = text.split("\n"),
-                    wrapped_text = [];
-
-                var maximum = 0;
-
-                // pass the text properties to the canvas context
-                this._setTextStyles(ctx);
-
-                for (var l = 0; l < lines.length; l++) {
-                    var line = "";
-                    var words = lines[l].split(" ");
-                    for (var w = 0; w < words.length; w++) {
-                        var testLine = line + words[w] + " ";
-                        var metrics = ctx.measureText(testLine);
-                        var testWidth = metrics.width;
-                        if (testWidth > (maxWidth - (this.getTextPadding('x') * 2))) {
-                            wrapped_text.push(line);
-                            line = words[w] + " ";
-                        } else {
-                            line = testLine;
-                            maximum = Math.max(testWidth, maximum);
-                        }
-                    }
-                    wrapped_text.push(line);
-                }
-
-                return wrapped_text.join("\n");
-            },
-
-            /**
-             * Set the text properties. Copied from fabric.Text
-             * @method _setTextStyles
-             * @param {CanvasRenderingContext2D} ctx Context to render on
-             */
-            _setTextStyles: function(ctx) {
-                ctx.fillStyle = this.fill.toLive ?
-                    this.fill.toLive(ctx) : this.fill;
-                ctx.strokeStyle = this.strokeStyle;
-                ctx.lineWidth = this.strokeWidth;
-                ctx.textBaseline = 'alphabetic';
-                ctx.textAlign = this.textAlign;
-                ctx.font = this._getFontDeclaration();
-            },
-
-            /**
-             * Get the font declaration accordingly to the canvas way. Copied from fabric.Text
-             * @method _getFontDeclaration
-             * @return {String} Font properties declarations
-             */
-            _getFontDeclaration: function() {
-                return [
-                    // node-canvas needs "weight style", while browsers need "style weight"
-                    (fabric.isLikelyNode ? this.fontWeight : this.fontStyle),
-                    (fabric.isLikelyNode ? this.fontStyle : this.fontWeight),
-                    this.fontSize + 'px',
-                    (fabric.isLikelyNode ? ('"' + this.fontFamily + '"') : this.fontFamily)
-                ].join(' ');
-            },
-
-            /**
-             * Apply the text properties to the fabric.Text object
-             * @method _applyPropertiesToText
-             * @param {Array} Properties
-             * @return {Array} Options applied to text object
-             */
-            _applyPropertiesToText: function(options) {
-                var text_opts = {};
-                if (options) {
-                    text_opts = fabric.util.object.clone(options);
-                } else {
-                    for (var i = 0; i < newProperties.length; i++) {
-                        text_opts[newProperties[i]] = this.get(newProperties[i]);
-                    }
-                }
-                // locks the text object
-                text_opts.lockScalingX = true;
-                text_opts.lockScalingY = true;
-                text_opts.selectable = false;
-                text_opts.scaleX = 1;
-                text_opts.scaleY = 1;
-                text_opts.text = this.originalText;
-
-                if (this.textObject)
-                    this.textObject.setOptions(text_opts);
-                return text_opts;
-            },
-
-            /**
-             * Applyes the coordinates and dimensions to the box image
-             * @method _moveImageBox
-             * @param {CanvasRenderingContext2D} ctx Context to render on
-             */
-            _moveImageBox: function(ctx) {
-                var x = (this.get('left') + (this.get('width') / 2)),
-                    y = (this.get('top'));
-
-                this.boxImage.left = x - (this.get('width') / 2);
-                this.boxImage.top = y;
-
-                this.boxImage.angle = this.get('angle');
-
-                var w = (this.get('width') * this.get('scaleX')),
-                    h = (this.get('height') * this.get('scaleY'));
-
-                var sx = (w / this.boxImage.width),
-                    sy = ((h) / this.boxImage.height);
-
-                this.boxImage.scaleX = sx;
-                this.boxImage.scaleY = sy;
-
-                this.boxImageScaleX = sx;
-                this.boxImageScaleY = sy;
             }
-        });
+        },
 
         /**
-         * @method fromObject
-         * @static
-         * @param {Object} object
-         * @return {fabric.Textbox}
+         * Transforms context before to render an object
+         * @method _preRenderTransform
+         * @param {CanvasRenderingContext2D} ctx Context
+         * @param {Boolean} noTransform If transform shouldn't be applyed
+         * @param {Boolean} noScale True if scale(x|y) must be reseted to 1, false if not
          */
-        fabric.Textbox.fromObject = function(object) {
-            var instance = new fabric.Textbox(object.originalText, clone(object), function() {
-                return instance && instance.canvas && instance.canvas.renderAll();
-            });
-            return instance;
-        };
-    })(typeof exports != 'undefined' ? exports : this);
+        _preRenderTransform: function(ctx, noTransform, noScale) {
+            var m = this.transformMatrix;
+            if (m && !this.group) {
+                ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            }
+
+            if (!noTransform) {
+                if (noScale) {
+                    this.originalScales = [this.scaleX, this.scaleY];
+                    this.scaleX = 1;
+                    this.scaleY = 1;
+                }
+                this.transform(ctx);
+            }
+
+            if (m && this.group) {
+                ctx.translate(-this.group.width / 2, -this.group.height / 2);
+                ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            }
+        },
+
+        /**
+         * Apply a background in the text if no box selected
+         * @method _render
+         * @param {CanvasRenderingContext2D} ctx Context to render on
+         */
+        _render: function(ctx) {
+            // show a background in the text, if selected
+            if (this.isActive() && !this.boxImage) {
+                ctx.save();
+
+                var x = -this.width / 2,
+                    y = -this.height / 2,
+                    w = this.width,
+                    h = this.height;
+
+                ctx.fillStyle = this.fill.toLive ? this.fill.toLive(ctx) : this.fill;
+
+                ctx.fillRect(x, y, w, h);
+
+                ctx.restore();
+            }
+        },
+
+        /**
+         * Adjust the text position in the canvas
+         * @method _moveText
+         * @param {CanvasRenderingContext2D} ctx Context to render on
+         */
+        _moveText: function(ctx) {
+            this.textObject.set('text', this._wrapText(
+                ctx,
+                this.textObject.get('originalText')
+            ));
+
+            var scaleX = this.originalScales ? this.originalScales[0] : this.scaleX;
+            var scaleY = this.originalScales ? this.originalScales[1] : this.scaleY;
+
+
+            var x = 0,
+                y = 0;
+
+            // horizontal alignment
+            if (this.textAlign == 'left') {
+                x = x - ((this.get("width") * scaleX) / 2) + (this.textObject.get('width') / 2) + (this.getTextPadding('x'));
+            } else if (this.textAlign == 'right') {
+                x = x + ((this.get("width") * scaleX) / 2) - (this.textObject.get('width') / 2) - (this.getTextPadding('x'));
+            }
+
+            // vertical alignment
+            if (this.vAlign == "top") {
+                y = y + ((this.textObject.get('height') / 2) - ((this.get('height') * scaleY) / 2)) + (this.getTextPadding('y'));
+            } else if (this.vAlign == 'bottom') {
+                y = y - ((this.textObject.get('height') / 2) - ((this.get('height') * scaleY) / 2)) - (this.getTextPadding('y'));
+            }
+
+            // left and top are related to current context transform (the transform of textbox object)
+            this.textObject.set("left", x);
+            this.textObject.set("top", y);
+        },
+
+        /**
+         * Break the text accordingly to the width of Textbox. Based on the code of Darren Nolan (@darrennolan)
+         * @method _wrapText
+         * @param {CanvasRenderingContext2D} ctx Context to render on
+         * @param {String} Text to wrap
+         * @return {Array} Array with the lines of the text
+         */
+        _wrapText: function(ctx, text) {
+            var scaleX = (this.originalScales ? this.originalScales[0] : this.scaleX);
+            var maxWidth = (this.width * scaleX),
+                lines = text.split("\n"),
+                wrapped_text = [];
+
+            var maximum = 0;
+
+            // pass the text properties to the canvas context
+            this._setTextStyles(ctx);
+
+            for (var l = 0; l < lines.length; l++) {
+                var line = "";
+                var words = lines[l].split(" ");
+                for (var w = 0; w < words.length; w++) {
+                    var testLine = line + words[w] + " ";
+                    var metrics = ctx.measureText(testLine);
+                    var testWidth = metrics.width;
+                    if (testWidth > (maxWidth - (this.getTextPadding('x') * 2))) {
+                        wrapped_text.push(line);
+                        line = words[w] + " ";
+                    } else {
+                        line = testLine;
+                        maximum = Math.max(testWidth, maximum);
+                    }
+                }
+                wrapped_text.push(line);
+            }
+
+            return wrapped_text.join("\n");
+        },
+
+        /**
+         * Set the text properties. Copied from fabric.Text
+         * @method _setTextStyles
+         * @param {CanvasRenderingContext2D} ctx Context to render on
+         */
+        _setTextStyles: function(ctx) {
+            ctx.fillStyle = this.fill.toLive ?
+                this.fill.toLive(ctx) : this.fill;
+            ctx.strokeStyle = this.strokeStyle;
+            ctx.lineWidth = this.strokeWidth;
+            ctx.textBaseline = 'alphabetic';
+            ctx.textAlign = this.textAlign;
+            ctx.font = this._getFontDeclaration();
+        },
+
+        /**
+         * Get the font declaration accordingly to the canvas way. Copied from fabric.Text
+         * @method _getFontDeclaration
+         * @return {String} Font properties declarations
+         */
+        _getFontDeclaration: function() {
+            return [
+                // node-canvas needs "weight style", while browsers need "style weight"
+                (fabric.isLikelyNode ? this.fontWeight : this.fontStyle),
+                (fabric.isLikelyNode ? this.fontStyle : this.fontWeight),
+                this.fontSize + 'px',
+                (fabric.isLikelyNode ? ('"' + this.fontFamily + '"') : this.fontFamily)
+            ].join(' ');
+        },
+
+        /**
+         * Apply the text properties to the fabric.Text object
+         * @method _applyPropertiesToText
+         * @param {Array} Properties
+         * @return {Array} Options applied to text object
+         */
+        _applyPropertiesToText: function(options) {
+            var text_opts = {};
+            if (options) {
+                text_opts = fabric.util.object.clone(options);
+            } else {
+                for (var i = 0; i < newProperties.length; i++) {
+                    text_opts[newProperties[i]] = this.get(newProperties[i]);
+                }
+            }
+            // locks the text object
+            text_opts.lockScalingX = true;
+            text_opts.lockScalingY = true;
+            text_opts.selectable = false;
+            text_opts.scaleX = 1;
+            text_opts.scaleY = 1;
+            text_opts.text = this.originalText;
+
+            if (this.textObject)
+                this.textObject.setOptions(text_opts);
+            return text_opts;
+        },
+
+        /**
+         * Applyes the coordinates and dimensions to the box image
+         * @method _moveImageBox
+         * @param {CanvasRenderingContext2D} ctx Context to render on
+         */
+        _moveImageBox: function(ctx) {
+            var x = (this.get('left') + (this.get('width') / 2)),
+                y = (this.get('top'));
+
+            this.boxImage.left = x - (this.get('width') / 2);
+            this.boxImage.top = y;
+
+            this.boxImage.angle = this.get('angle');
+
+            var w = (this.get('width') * this.get('scaleX')),
+                h = (this.get('height') * this.get('scaleY'));
+
+            var sx = (w / this.boxImage.width),
+                sy = ((h) / this.boxImage.height);
+
+            this.boxImage.scaleX = sx;
+            this.boxImage.scaleY = sy;
+
+            this.boxImageScaleX = sx;
+            this.boxImageScaleY = sy;
+        }
+    });
+
+    /**
+     * @method fromObject
+     * @static
+     * @param {Object} object
+     * @return {fabric.Textbox}
+     */
+    fabric.Textbox.fromObject = function(object) {
+        var instance = new fabric.Textbox(object.originalText, clone(object), function() {
+            return instance && instance.canvas && instance.canvas.renderAll();
+        });
+        return instance;
+    };
+})(typeof exports != 'undefined' ? exports : this);

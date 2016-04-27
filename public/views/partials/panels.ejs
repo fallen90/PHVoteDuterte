@@ -2,15 +2,15 @@
     <div class="col-lg-4 col-md-4 col-xs-12 col-sm-4" id="step1">
         <div class="panel panel-default card">
             <div class="panel-heading">
-                <h3 class="panel-title"><b>STEP 1</b>: Choose Image</h3>
+                <h3 class="panel-title"><b>STEP 1</b>: Choose an Image</h3>
             </div>
             <div class="panel-body">
                 <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                    <a href="#" class="thumbnail">
-                        <img src="./img/pug.jpg" alt="" id="preview">
+                    <a href="#" class="thumbnail" id="previewContainer">
+                        <img src="./img/default.jpg" alt="" id="preview" crossorigin="anonymous">
                     </a>
                 </div>
-                <button class="btn btn-block btn-facebook">
+                <button class="btn btn-block btn-facebook" onclick="GetUserProfile()">
                     <i class="fa fa-facebook-f"></i> Use Facebook Profile
                 </button>
                 <fieldset class="title">
@@ -18,11 +18,11 @@
                 </fieldset>
                 <button class="btn btn-block btn-primary" id="pickImage">
                     <i class="fa fa-picture-o"></i> Choose an Image</button>
-                    <input type="file" name="file" id="file" accept="image/*" capture="camera" style="display:none">
+                <input type="file" name="file" id="file" accept="image/*" capture="camera" style="display:none">
             </div>
         </div>
     </div>
-    <div class="col-lg-4 col-md-4 col-xs-12 col-sm-4" id="step2">
+    <!--   <div class="col-lg-4 col-md-4 col-xs-12 col-sm-4" id="step2">
         <div class="panel panel-default card">
             <div class="panel-heading">
                 <h3 class="panel-title"><b>STEP 2</b>: Typo Position</h3>
@@ -39,22 +39,22 @@
                 </button>
             </div>
         </div>
-    </div>
+    </div> -->
     <div class="col-lg-4 col-md-4 col-xs-12 col-sm-4" id="step3">
         <div class="panel panel-default card">
             <div class="panel-heading">
-                <h3 class="panel-title"><b>STEP 3</b>: Personal Info</h3>
+                <h3 class="panel-title"><b>STEP 2</b>: Personal Info</h3>
             </div>
             <div class="panel-body">
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Name" id="userName" value="Facebook User">
+                    <input type="text" class="form-control" placeholder="Name" id="userName" value="" onkeyup="setName(this.value)">
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Occupation / Title" id="userTitle" value="Duterte Supporter">
+                    <input type="text" class="form-control" placeholder="Occupation / Title" id="userTitle" value="" onkeyup="setTitle(this.value)">
                 </div>
-                <button class="btn btn-block btn-primary btn-generate" id="generate">
+                <!-- <button class="btn btn-block btn-primary btn-generate" id="generate">
                     Generate <i class='fa fa-chevron-right'></i>
-                </button>
+                </button> -->
             </div>
         </div>
     </div>
@@ -64,12 +64,25 @@
                 <h3 class="panel-title">Output</h3>
             </div>
             <div class="panel-body" style="overflow:auto;">
-                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <!-- <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                     <a href="#" class="thumbnail" download>
                         <img data-src="#" alt="" id="output">
                     </a>
+                </div> -->
+                <canvas id="c" width="540" height="540" style="transform:scale(0.75);margin:-14%;border: 1px solid rgb(170, 170, 170);-webkit-user-select: none; cursor: default;"></canvas>
+                <div class="form-group">
+                    <label class="control-label">Move</label>
+                    <input type="range" min="0" max="0" step="0.5" onchange="movePicture(this.value)" class="flipped form-control">
                 </div>
-                <canvas id="c" width="540" height="540" style="display:none;border: 1px solid rgb(170, 170, 170);-webkit-user-select: none; cursor: default;"></canvas>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" onchange="flip()"> <b>Flipped</b>
+                    </label>
+                </div>
+                <button type="button" id="downloadImage" class="btn btn-block btn-primary" onclick="DownloadImage()">Download</button>
+                <!-- <button type="button" class="btn btn-block btn-facebook" onclick="UploadToFacebook()">
+                     <i class="fa fa-facebook-f"></i> Use as Profile Picture
+                </button> -->
             </div>
         </div>
     </div>

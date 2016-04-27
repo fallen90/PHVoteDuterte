@@ -1,6 +1,27 @@
 <% include partials/header.ejs %>
 
     <body>
+        <div id="fb-root"></div>
+        <script>
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId: '1583106978685758',
+                xfbml: true,
+                version: 'v2.6'
+            });
+        };
+
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {
+                return;
+            }
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+        </script>
         <div class="header">
             <div class="header-inner">
                 <h1><span>#</span><span>PHVote</span>Duterte</h1>
@@ -13,8 +34,10 @@
                     <% include partials/panels.ejs %>
                 </div>
         </div>
-
         <% include partials/footer.ejs %>
+            <script>
+            generate();
+            </script>
     </body>
 
     </html>
